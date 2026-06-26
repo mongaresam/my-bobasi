@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Admin — Bobasi BBS{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body class="admin-body">
+<div class="admin-layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-logo">
+        <img src="{{ url_for('static', filename='img/ngcdf-logo.svg') }}" alt="NG-CDF Logo">
+      </div>
+      <div class="sidebar-brand-text">
+        <div class="brand-title">Bobasi BBS</div>
+        <div class="brand-sub">Admin Portal</div>
+      </div>
+      <div class="sidebar-toggle-btn" onclick="toggleAdminSidebar()" id="sidebarToggleBtn">◀</div>
+    </div>
+
+    <nav class="sidebar-nav">
+      {% if current_user.role == 'admin' %}
+      <div class="nav-section-label">Overview</div>
+      <a href="{{ url_for('admin.dashboard') }}" class="nav-item {% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
+        <span class="nav-icon">📊</span> <span class="nav-text">Dashboard</span>
+      </a>
+      {% endif %}
+
+      <div class="nav-section-label">Applications</div>
+      <a href="{{ url_for('admin.applications') }}" class="nav-item {% if request.endpoint in ['admin.applications','admin.view_application'] %}active{% endif %}">
+        <span class="nav-icon">📝</span> <span class="nav-text">All Applications</span>
+      </a>
+      <a href="{{ url_for('admin.applications') }}?status=pending" class="nav-item sub">
+        <span class="nav-text">⏳ Pending</span>
+      </a>
+      <a href="{{ url_for('admin.applications') }}?status=under_review" class="nav-item sub">
+        <span class="nav-text">🔍 Under Review</span>
+      </a>
+      <a href="{{ url_for('admin.applications') }}?status=approved" class="nav-item sub">
+        <span class="nav-text">✅ Approved</span>
+      </a>
+      <a href="{{ url_for('admin.applications') }}?status=rejected" class="nav-item sub">
+        <span class="nav-text">❌ Rejected</span>
+      </a>
+
+      <div class="nav-section-label">People</div>
+      <a href="{{ url_for('admin.students') }}" class="nav-item {% if request.endpoint in ['admin.students','admin.view_student'] %}active{% endif %}">
+        <span class="nav-icon">🎓</span> <span class="nav-text">Students</span>
+      </a>
+
+      {% if current_user.role == 'admin' %}
+      <div class="nav-section-label">System</div>
+      <a href="{{ url_for('admin.reports') }}" class="nav-item {% if request.endpoint == 'admin.reports' %}active{% endif %}">
+        <span class="nav-icon">📈</span> <span class="nav-text">Reports</span>
+      </a>
+      <a href="{{ url_for('finance.dashboard') }}" class="nav-item">
+        <span class="nav-icon">💰</span> <span class="nav-text">Finance Portal</span>
+      </a>
+      <a href="{{ url_for('admin.users') }}" class="nav-item {% if request.endpoint == 'admin.users' %}active{% endif %}">
+        <span class="nav-icon">👥</span> <span class="nav-text">Users</span>
+      </a>
+      {% endif %}
+
+      <a href="{{ url_for('auth.home') }}" class="nav-item">
+        <span class="nav-icon">🌐</span> <span class="nav-text">Public Site</span>
+      </a>
+      <a href="{{ url_for('auth.logout') }}" class="nav-item logout">
+        <span class="nav-icon">🚪</span> <span class="nav-text">Logout</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-user">
+      <div class="user-avatar-sm">{{ current_user.name[0].upper() }}</div>
+      <div class="sidebar-user-info">
+        <div class="user-name-sm">{{ current_user.name }}</div>
+        <div class="user-role-sm">{{ current_user.role.replace('_',' ').title() }}</div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="admin-main" id="adminMain">
+    <div class="admin-topbar">
+      <button class="sidebar-toggle" onclick="toggleAdminSidebar()">☰</button>
+      <h1 class="page-title">{% block page_title %}Dashboard{% endblock %}</h1>
+      <div class="topbar-right">
+        {% if current_user.unread_notifications > 0 %}
+        <a href="{{ url_for('admin.mark_notifications_read') }}" class="notif-link">
+          🔔 <span class="notif-badge">{{ current_user.unread_notifications }}</span>
+        </a>
+        {% endif %}
+        <span id="adminDate" class="admin-date"></span>
+      </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      <div class="admin-flash">
+        {% for cat, msg in messages %}
+        <div class="flash flash-{{ cat }}">{{ msg }} <button onclick="this.parentElement.remove()">✕</button></div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    {% endwith %}
+
+    <div class="admin-content">
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+</div>
+
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+<script>
+  // Date
+  const d = new Date();
+  document.getElementById('adminDate').textContent = d.toLocaleDateString('en-KE', {weekday:'short', day:'numeric', month:'short', year:'numeric'});
+
+  // Sidebar toggle
+  function toggleAdminSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const btn = document.getElementById('sidebarToggleBtn');
+    sidebar.classList.toggle('collapsed');
+    btn.textContent = sidebar.classList.contains('collapsed') ? '▶' : '◀';
+    localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+  }
+
+  // Mobile overlay
+  if (window.innerWidth <= 768) {
+    document.querySelector('.sidebar').classList.add('collapsed');
+  }
+
+  // Restore state
+  if (localStorage.getItem('sidebarCollapsed') === 'true' && window.innerWidth > 768) {
+    document.getElementById('sidebar').classList.add('collapsed');
+    document.getElementById('sidebarToggleBtn').textContent = '▶';
+  }
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}Register — Bobasi BBS{% endblock %}
+{% block content %}
+<div class="auth-page">
+  <div class="auth-card" style="max-width:520px;">
+    <div class="auth-header">
+      <div class="auth-logo">
+        <img src="{{ url_for('static', filename='img/ngcdf-logo.svg') }}" alt="NG-CDF Logo">
+      </div>
+      <h1>Create Account</h1>
+      <p>Register for the 2025/2026 Bobasi Bursary</p>
+    </div>
+    <form method="POST" action="{{ url_for('auth.register') }}" class="auth-form">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" name="name" required placeholder="Your full name" autofocus>
+      </div>
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" name="email" required placeholder="your@email.com">
+      </div>
+      <div class="form-group">
+        <label>Phone Number</label>
+        <input type="text" name="phone" required placeholder="07XXXXXXXX">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <div class="password-wrap">
+          <input type="password" name="password" id="pass1" required placeholder="Choose a strong password">
+          <button type="button" onclick="togglePwd('pass1')" class="pwd-toggle">👁</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Confirm Password</label>
+        <div class="password-wrap">
+          <input type="password" name="confirm_password" id="pass2" required placeholder="Repeat your password">
+          <button type="button" onclick="togglePwd('pass2')" class="pwd-toggle">👁</button>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary full">Create Account →</button>
+    </form>
+    <div class="auth-footer">
+      <p>Already have an account? <a href="{{ url_for('auth.login') }}">Login here</a></p>
+    </div>
+  </div>
+</div>
+{% endblock %}

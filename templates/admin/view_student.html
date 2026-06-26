@@ -1,0 +1,62 @@
+{% extends 'admin/base.html' %}
+{% block title %}{{ student.full_name }} — Bobasi BBS{% endblock %}
+{% block page_title %}Student Profile{% endblock %}
+{% block content %}
+<div class="app-detail">
+  <div class="detail-topbar">
+    <a href="{{ url_for('admin.students') }}" class="btn btn-outline btn-sm">← Students</a>
+    <h2>{{ student.full_name }}</h2>
+  </div>
+  <div class="detail-grid">
+    <div class="detail-left">
+      <div class="card">
+        <div class="card-header"><h3>📋 Personal</h3></div>
+        <div class="drows p">
+          <div class="dr"><span>Full Name</span><strong>{{ student.full_name }}</strong></div>
+          <div class="dr"><span>Date of Birth</span><strong>{{ student.date_of_birth or '—' }}</strong></div>
+          <div class="dr"><span>ID Number</span><strong>{{ student.id_number or '—' }}</strong></div>
+          <div class="dr"><span>Gender</span><strong>{{ (student.gender or '').title() }}</strong></div>
+          <div class="dr"><span>Phone</span><strong>{{ student.phone or '—' }}</strong></div>
+          <div class="dr"><span>Parent Phone</span><strong>{{ student.parent_phone or '—' }}</strong></div>
+          <div class="dr"><span>Sub-County</span><strong>{{ student.sub_county or '—' }}</strong></div>
+          <div class="dr"><span>Ward</span><strong>{{ student.ward or '—' }}</strong></div>
+          <div class="dr"><span>Family Status</span><strong>{{ (student.family_status or '').replace('_',' ').title() }}</strong></div>
+          <div class="dr"><span>Father</span><strong>{{ student.father_name or '—' }}</strong></div>
+          <div class="dr"><span>Mother</span><strong>{{ student.mother_name or '—' }}</strong></div>
+          <div class="dr"><span>Total Siblings</span><strong>{{ student.siblings_count }}</strong></div>
+          <div class="dr total"><span>Total Family Income</span><strong>KShs. {{ "{:,.0f}".format(student.total_family_income) }}/yr</strong></div>
+        </div>
+      </div>
+      <div class="card mt">
+        <div class="card-header"><h3>🎓 Academic</h3></div>
+        <div class="drows p">
+          <div class="dr"><span>Admission No.</span><strong>{{ student.admission_number or '—' }}</strong></div>
+          <div class="dr"><span>Institution</span><strong>{{ student.institution or '—' }}</strong></div>
+          <div class="dr"><span>Course</span><strong>{{ student.course or '—' }}</strong></div>
+          <div class="dr"><span>Level</span><strong>{{ student.level_of_study or '—' }}</strong></div>
+          <div class="dr"><span>Year of Study</span><strong>{{ student.year_of_study or '—' }}</strong></div>
+          <div class="dr"><span>Bank Account</span><strong>{{ student.bank_ac_no or '—' }}</strong></div>
+          <div class="dr"><span>Bank Branch</span><strong>{{ student.bank_branch or '—' }}</strong></div>
+        </div>
+      </div>
+    </div>
+    <div class="detail-right">
+      <div class="card">
+        <div class="card-header"><h3>📝 Applications</h3></div>
+        {% for a in student.applications %}
+        <div style="padding:12px 20px;border-bottom:1px solid #f3f4f6;">
+          <div style="display:flex;justify-content:space-between;">
+            <span class="sn-tag">{{ a.application_number }}</span>
+            <span class="badge badge-{{ a.status }}">{{ a.status.replace('_',' ').title() }}</span>
+          </div>
+          <div style="font-size:13px;color:#6b7280;margin-top:4px;">KShs. {{ "{:,.0f}".format(a.requested_amount) }} — {{ a.submitted_at.strftime('%d/%m/%Y') }}</div>
+          <a href="{{ url_for('admin.view_application', app_id=a.id) }}" class="btn-xs" style="margin-top:6px;">Review</a>
+        </div>
+        {% else %}
+        <div class="empty-state"><p>No applications.</p></div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

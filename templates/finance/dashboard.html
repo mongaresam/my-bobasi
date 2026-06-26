@@ -1,0 +1,115 @@
+{% extends 'finance/base.html' %}
+{% block title %}Finance Dashboard — Bobasi BBS{% endblock %}
+{% block page_title %}Finance Dashboard{% endblock %}
+{% block content %}
+
+<div class="stats-grid">
+  <div class="sw">
+    <div class="sw-icon">⏳</div>
+    <div><div class="sw-num">{{ stats.approved_pending_disburse }}</div><div class="sw-name">Awaiting Disbursement</div></div>
+  </div>
+  <div class="sw money">
+    <div class="sw-icon">💸</div>
+    <div><div class="sw-num" style="font-size:20px;">KShs {{ "{:,.0f}".format(stats.total_disbursed) }}</div><div class="sw-name">Total Disbursed</div></div>
+  </div>
+  <div class="sw">
+    <div class="sw-icon">🎓</div>
+    <div><div class="sw-num">{{ stats.total_beneficiaries }}</div><div class="sw-name">Beneficiaries</div></div>
+  </div>
+  <div class="sw">
+    <div class="sw-icon">✅</div>
+    <div><div class="sw-num">{{ stats.disbursed_apps }}</div><div class="sw-name">Disbursed Apps</div></div>
+  </div>
+</div>
+
+<div class="adash-grid">
+  <!-- Recent Disbursements -->
+  <div class="card">
+    <div class="card-header">
+      <h3>Recent Disbursements</h3>
+      <a href="{{ url_for('finance.disbursements') }}" class="card-link">View All →</a>
+    </div>
+    <div class="table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr><th>Reference</th><th>Student</th><th>Amount</th><th>Method</th><th>Date</th><th>Officer</th></tr>
+        </thead>
+        <tbody>
+          {% for d in recent_disb %}
+          <tr>
+            <td><span class="sn-tag">{{ d.reference_number }}</span></td>
+            <td><strong>{{ d.student.full_name }}</strong></td>
+            <td style="font-family:'Playfair Display',serif;font-weight:700;color:#1e3c72;">KShs {{ "{:,.0f}".format(d.amount) }}</td>
+            <td>
+              <span class="badge badge-{% if d.payment_method == 'bank_transfer' %}approved{% elif d.payment_method == 'mpesa' %}under_review{% else %}pending{% endif %}">
+                {{ d.payment_method.replace('_',' ').title() }}
+              </span>
+            </td>
+            <td style="color:#64748b;font-size:13px;">{{ d.disbursement_date.strftime('%d %b %Y') }}</td>
+            <td style="font-size:12px;color:#64748b;">{{ d.finance_officer.name if d.finance_officer else '—' }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="6" class="no-data">No disbursements recorded yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Chart & Quick Actions -->
+  <div style="display:flex;flex-direction:column;gap:20px;">
+    <div class="card">
+      <div class="card-header"><h3>Monthly Disbursements</h3></div>
+      <canvas id="disbChart" height="220"></canvas>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h3>Quick Actions</h3></div>
+      <div style="padding:16px;display:flex;flex-direction:column;gap:10px;">
+        <a href="{{ url_for('finance.disburse') }}" class="action-btn">
+          <span>💸</span> Disburse Bursary Funds
+        </a>
+        <a href="{{ url_for('finance.disbursements') }}" class="action-btn">
+          <span>📋</span> All Disbursements
+        </a>
+        <a href="{{ url_for('finance.grants') }}" class="action-btn">
+          <span>🏆</span> Grant Records
+        </a>
+        <a href="{{ url_for('admin.applications') }}?status=approved" class="action-btn">
+          <span>⏳</span> Pending Approvals
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<script>
+const monthly = {{ monthly | tojson }};
+new Chart(document.getElementById('disbChart').getContext('2d'), {
+  type: 'bar',
+  data: {
+    labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+    datasets: [{
+      label: 'Disbursed (KShs)',
+      data: monthly,
+      backgroundColor: 'rgba(30,60,114,0.80)',
+      borderRadius: 6,
+      borderSkipped: false
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)' },
+        ticks: { callback: v => v >= 1000 ? 'KShs '+Math.round(v/1000)+'k' : v } },
+      x: { grid: { display: false } }
+    }
+  }
+});
+</script>
+{% endblock %}

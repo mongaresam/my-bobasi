@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block title %}Apply for Bursary — Bobasi BBS{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/form.css') }}">{% endblock %}
+{% block content %}
+<div class="form-page">
+  <div class="form-header">
+    <h1>Bursary Application</h1>
+    <p>2025/2026 Financial Year — Bobasi NG-CDF</p>
+  </div>
+
+  {% if not student.profile_complete %}
+  <div class="alert-banner" style="margin-bottom:24px;">
+    ⚠️ Your profile is incomplete. <a href="{{ url_for('student.profile') }}">Complete your profile first</a> to apply.
+  </div>
+  {% endif %}
+
+  <div class="multi-form" style="background:white;border-radius:20px;box-shadow:0 4px 24px rgba(0,0,0,0.08);overflow:hidden;">
+    <form method="POST" action="{{ url_for('application.apply') }}" style="padding:40px;">
+      <h2 class="step-title">📋 Application Details</h2>
+      <div class="fgrid">
+        <div class="fg"><label>Applicant</label><input type="text" value="{{ student.full_name }}" readonly style="background:#f3f4f6;"></div>
+        <div class="fg"><label>Admission Number</label><input type="text" value="{{ student.admission_number or '' }}" readonly style="background:#f3f4f6;"></div>
+        <div class="fg full"><label>Institution</label><input type="text" name="institution" value="{{ student.institution or '' }}" required placeholder="Your institution"></div>
+        <div class="fg full"><label>Course</label><input type="text" name="course" value="{{ student.course or '' }}" required placeholder="Your course"></div>
+        <div class="fg"><label>Level of Study</label>
+          <select name="level_of_study" required>
+            {% for l in ['Certificate','Diploma','Degree','Masters','PHD'] %}
+            <option value="{{ l }}" {% if student.level_of_study == l %}selected{% endif %}>{{ l }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="fg"><label>Academic Year</label>
+          <select name="academic_year">
+            <option value="2025/2026" selected>2025/2026</option>
+            <option value="2024/2025">2024/2025</option>
+          </select>
+        </div>
+        <div class="fg"><label>Semester</label>
+          <select name="semester">
+            <option value="1">Semester 1</option>
+            <option value="2">Semester 2</option>
+            <option value="3">Semester 3</option>
+          </select>
+        </div>
+        <div class="fg"><label>Amount Requested (KShs.) *</label>
+          <input type="number" name="requested_amount" required min="1000" max="50000" placeholder="e.g. 15000">
+        </div>
+        <div class="fg full"><label>Purpose / Intended Use</label>
+          <textarea name="purpose" rows="3" placeholder="How will the funds be used? e.g. tuition fees, accommodation, books..."></textarea>
+        </div>
+      </div>
+
+      <h3 style="font-size:16px;font-weight:700;color:#145c38;margin:28px 0 16px;padding-top:24px;border-top:2px solid #e8f5ee;">Siblings in Educational Institutions</h3>
+      <div id="siblingsTable">
+        <div class="sib-header"><span>Name</span><span>Institution</span><span>Year/Class</span><span>Total Fee</span><span>Fees Paid</span><span>Outstanding</span><span></span></div>
+        <div id="sibRows"></div>
+      </div>
+      <button type="button" class="btn btn-sm btn-outline" onclick="addSibRow()" style="margin-top:10px;">+ Add Sibling</button>
+
+      <div class="notice-box sm" style="margin-top:28px;">
+        <strong>Note:</strong> By submitting this application, you confirm all information is accurate. False information leads to disqualification.
+      </div>
+
+      <div style="display:flex;gap:12px;margin-top:24px;">
+        <a href="{{ url_for('student.dashboard') }}" class="btn btn-outline">Cancel</a>
+        <button type="submit" class="btn btn-primary">Submit Application →</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+let sibCount = 0;
+function addSibRow() {
+  const container = document.getElementById('sibRows');
+  const row = document.createElement('div');
+  row.className = 'sib-row';
+  row.innerHTML = `
+    <input type="text" name="sibling_name_${sibCount}" placeholder="Name">
+    <input type="text" name="sibling_institution_${sibCount}" placeholder="Institution">
+    <input type="text" name="sibling_year_${sibCount}" placeholder="Year/Class">
+    <input type="number" name="sibling_total_fee_${sibCount}" placeholder="Total Fee">
+    <input type="number" name="sibling_fees_paid_${sibCount}" placeholder="Fees Paid">
+    <input type="number" name="sibling_outstanding_${sibCount}" placeholder="Outstanding">
+    <button type="button" onclick="this.parentElement.remove()" class="btn-remove">✕</button>
+  `;
+  container.appendChild(row);
+  sibCount++;
+}
+</script>
+{% endblock %}

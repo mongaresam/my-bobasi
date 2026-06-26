@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% block title %}Bobasi NG-CDF Bursary System — Home{% endblock %}
+{% block content %}
+
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <div class="hero-badge">📅 2025/2026 Financial Year &middot; Applications Open</div>
+    <h1 class="hero-title">Bobasi NG-CDF<br><span>Bursary Fund</span></h1>
+    <p class="hero-sub">Empowering needy students from Bobasi Constituency, Kisii County to access quality education through the National Government Constituency Development Fund.</p>
+    <div class="hero-cta">
+      <a href="{{ url_for('auth.register') }}" class="btn btn-lg btn-white">Apply for Bursary</a>
+      <a href="{{ url_for('application.track') }}" class="btn btn-lg btn-outline-white">Track Application</a>
+    </div>
+  </div>
+  <div class="hero-cards">
+    <div class="hero-stat-card">
+      <div class="hsc-icon">📝</div>
+      <div class="hsc-label">Online Applications</div>
+    </div>
+    <div class="hero-stat-card">
+      <div class="hsc-icon">🔍</div>
+      <div class="hsc-label">Committee Review</div>
+    </div>
+    <div class="hero-stat-card">
+      <div class="hsc-icon">💰</div>
+      <div class="hsc-label">Fast Disbursement</div>
+    </div>
+    <div class="hero-stat-card">
+      <div class="hsc-icon">📊</div>
+      <div class="hsc-label">Transparent Records</div>
+    </div>
+  </div>
+</section>
+
+<section class="features-section">
+  <div class="container">
+    <div class="sec-header">
+      <h2>Complete Bursary Management</h2>
+      <p>A fully digital system for Bobasi Constituency bursary applications &mdash; from submission to disbursement</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="fc-icon">🎓</div>
+        <h3>Student Portal</h3>
+        <p>Register, complete your profile, submit applications, upload supporting documents, and track your application status in real-time.</p>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon">⚖️</div>
+        <h3>Committee Review</h3>
+        <p>The bursary committee evaluates each application based on financial need, academic merit, and eligibility criteria before making recommendations.</p>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon">🏦</div>
+        <h3>Finance &amp; Disbursement</h3>
+        <p>Finance officers process approved applications and disburse funds directly via bank transfer, M-Pesa, or cheque with full audit trails.</p>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon">📄</div>
+        <h3>Document Management</h3>
+        <p>Upload and manage all required supporting documents including ID copies, admission letters, transcripts, and death certificates for orphans.</p>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon">📱</div>
+        <h3>Instant Notifications</h3>
+        <p>Get notified at every stage of your application — submission, review, approval, and disbursement — keeping you informed throughout.</p>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon">📊</div>
+        <h3>Reports &amp; Analytics</h3>
+        <p>Comprehensive reporting by sub-county, institution, financial year, and disbursement method for full accountability and transparency.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="eligibility-section">
+  <div class="container">
+    <div class="elig-grid">
+      <div class="elig-left">
+        <h2>Who Can Apply?</h2>
+        <p>The Bobasi NG-CDF Bursary Fund supports students who are:</p>
+        <ul class="elig-list">
+          <li>✅ Residents of Bobasi Constituency, Kisii County</li>
+          <li>✅ Enrolled in accredited post-secondary institutions</li>
+          <li>✅ From financially needy families with low household income</li>
+          <li>✅ Total or partial orphans from low-income households</li>
+          <li>✅ Pursuing Certificate, Diploma, Degree, Masters, or PhD</li>
+        </ul>
+        <h3 style="margin-top:28px;margin-bottom:14px;">Documents Required</h3>
+        <ul class="elig-list">
+          <li>📄 National ID / Admission Letter (1st year students)</li>
+          <li>📄 Latest Transcript or Results Slip (3rd &amp; 4th year)</li>
+          <li>📄 Death Certificate — for orphans</li>
+          <li>📄 Parents' ID copies (if both parents alive)</li>
+        </ul>
+        <a href="{{ url_for('auth.register') }}" class="btn btn-primary" style="margin-top:28px;">Start Your Application →</a>
+      </div>
+      <div class="elig-right">
+        <div class="deadline-card">
+          <div class="dc-icon">⏰</div>
+          <h3>Application Deadline</h3>
+          <div class="dc-date">16 February 2026</div>
+          <p>5:00 PM East Africa Time</p>
+          <div class="dc-offices">
+            <p>Submit at any NG-CDF office:</p>
+            <span>Nyamache</span>
+            <span>Itumbe</span>
+            <span>Nyacheki</span>
+          </div>
+          <div class="dc-roles">
+            <h4>User Roles</h4>
+            <div class="role-list">
+              <div class="role-item"><span class="role-icon">🎓</span> Student — Apply &amp; Track Status</div>
+              <div class="role-item"><span class="role-icon">⚖️</span> Committee — Review &amp; Recommend</div>
+              <div class="role-item"><span class="role-icon">💰</span> Finance — Process Disbursements</div>
+              <div class="role-item"><span class="role-icon">🔧</span> Admin — Full System Access</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-box">
+      <h2>Ready to Apply?</h2>
+      <p>Create a free account to start your bursary application for the 2025/2026 financial year. The process is fully digital.</p>
+      <div class="cta-btns">
+        <a href="{{ url_for('auth.register') }}" class="btn btn-lg btn-white">Create Account &amp; Apply</a>
+        <a href="{{ url_for('auth.login') }}" class="btn btn-lg btn-outline-white">Already Registered? Login</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

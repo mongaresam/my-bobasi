@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}Track Application — Bobasi BBS{% endblock %}
+{% block content %}
+<div class="track-page">
+  <div class="track-hero">
+    <h1>Track Your Application</h1>
+    <p>Enter your application reference number to check status</p>
+  </div>
+  <div class="track-container">
+    <form method="GET" action="{{ url_for('application.track') }}" class="track-form">
+      <div class="track-input-row">
+        <input type="text" name="ref" value="{{ ref }}" placeholder="e.g. BOB2025000001" class="track-input" required>
+        <button type="submit" class="btn btn-primary">Check Status</button>
+      </div>
+    </form>
+
+    {% if ref and not application %}
+    <div class="track-result not-found">
+      <div class="tr-icon">❌</div>
+      <h3>Not Found</h3>
+      <p>No application with reference <strong>{{ ref }}</strong>. Check your reference number and try again.</p>
+    </div>
+    {% endif %}
+
+    {% if application %}
+    <div class="track-result found">
+      <div class="tr-header">
+        <div class="tr-ref">{{ application.application_number }}</div>
+        <span class="badge badge-{{ application.status }} lg">{{ application.status.replace('_',' ').title() }}</span>
+      </div>
+      <div class="tr-details">
+        <div class="tr-row"><span>Student</span><strong>{{ application.student.full_name }}</strong></div>
+        <div class="tr-row"><span>Institution</span><strong>{{ application.institution or '—' }}</strong></div>
+        <div class="tr-row"><span>Course</span><strong>{{ application.course or '—' }}</strong></div>
+        <div class="tr-row"><span>Submitted</span><strong>{{ application.submitted_at.strftime('%d %B %Y') }}</strong></div>
+        {% if application.approved_amount %}
+        <div class="tr-row highlight"><span>Amount Awarded</span><strong class="amount">KShs. {{ "{:,.2f}".format(application.approved_amount) }}</strong></div>
+        {% endif %}
+        {% if application.rejection_reason %}
+        <div class="tr-row" style="background:#fee2e2;"><span>Reason</span><strong style="color:#991b1b;">{{ application.rejection_reason }}</strong></div>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

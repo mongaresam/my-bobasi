@@ -1,0 +1,39 @@
+{% extends 'finance/base.html' %}
+{% block title %}Grant Records — Bobasi BBS{% endblock %}
+{% block page_title %}Grant Records{% endblock %}
+{% block content %}
+
+<div class="card">
+  <div class="card-header">
+    <h3>Bursary Grant Records</h3>
+    <div class="header-actions">
+      <a href="{{ url_for('finance.grants') }}" class="filter-tab {% if not status_filter %}active{% endif %}">All</a>
+      <a href="{{ url_for('finance.grants') }}?status=active" class="filter-tab {% if status_filter=='active' %}active{% endif %}">Active</a>
+    </div>
+  </div>
+  <div class="table-wrap">
+    <table class="admin-table">
+      <thead>
+        <tr><th>#</th><th>Student</th><th>Institution</th><th>Course</th><th>Grant Amount</th><th>Application</th><th>Date Granted</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        {% for g in grants %}
+        <tr>
+          <td style="color:#94a3b8;font-size:12px;">{{ loop.index }}</td>
+          <td><strong>{{ g.student.full_name }}</strong></td>
+          <td style="font-size:13px;color:#64748b;">{{ g.student.institution or '—' }}</td>
+          <td style="font-size:13px;color:#64748b;">{{ g.student.course or '—' }}</td>
+          <td style="font-family:'Playfair Display',serif;font-weight:700;color:#1e3c72;">KShs {{ "{:,.0f}".format(g.principal_amount) }}</td>
+          <td><span class="sn-tag">{{ g.application.application_number }}</span></td>
+          <td style="font-size:12px;color:#64748b;">{{ g.created_at.strftime('%d %b %Y') }}</td>
+          <td><span class="badge badge-approved">Granted</span></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8" class="no-data">No grant records found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="table-footer">Total grants: <strong>{{ grants|length }}</strong> — Total Amount: <strong style="color:#1e3c72;">KShs {{ "{:,.0f}".format(grants | sum(attribute='principal_amount')) }}</strong></div>
+</div>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}403 Forbidden{% endblock %}
+{% block content %}
+<div style="min-height:60vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;text-align:center;padding:40px;">
+  <div style="font-size:80px;">🚫</div>
+  <h1 style="font-family:'Playfair Display',serif;font-size:48px;color:#c0392b;">403</h1>
+  <h2>Access Forbidden</h2>
+  <p style="color:#6b7280;">You don't have permission to access this page.</p>
+  <a href="{{ url_for('auth.home') }}" class="btn btn-primary">Go Home</a>
+</div>
+{% endblock %}

@@ -1,0 +1,152 @@
+{% extends 'admin/base.html' %}
+{% block title %}Dashboard — Bobasi BBS{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block content %}
+
+<!-- STATS GRID -->
+<div class="stats-grid">
+  <div class="sw">
+    <div class="sw-icon">🎓</div>
+    <div><div class="sw-num">{{ stats.total_students }}</div><div class="sw-name">Students</div></div>
+  </div>
+  <div class="sw">
+    <div class="sw-icon">📝</div>
+    <div><div class="sw-num">{{ stats.total_apps }}</div><div class="sw-name">Total Applications</div></div>
+  </div>
+  <div class="sw">
+    <div class="sw-icon">⏳</div>
+    <div><div class="sw-num">{{ stats.pending }}</div><div class="sw-name">Pending Review</div></div>
+  </div>
+  <div class="sw">
+    <div class="sw-icon">🔍</div>
+    <div><div class="sw-num">{{ stats.under_review }}</div><div class="sw-name">Under Review</div></div>
+  </div>
+  <div class="sw">
+    <div class="sw-icon">✅</div>
+    <div><div class="sw-num">{{ stats.approved }}</div><div class="sw-name">Approved</div></div>
+  </div>
+  <div class="sw money">
+    <div class="sw-icon">💰</div>
+    <div><div class="sw-num" style="font-size:18px;">KShs {{ "{:,.0f}".format(stats.total_disbursed) }}</div><div class="sw-name">Total Disbursed</div></div>
+  </div>
+</div>
+
+<!-- STATUS OVERVIEW BAR -->
+{% set total = stats.total_apps or 1 %}
+<div class="card" style="margin-bottom:20px;">
+  <div class="card-header"><h3>Application Status Overview</h3></div>
+  <div style="padding:20px 24px;">
+    <div style="display:flex;border-radius:8px;overflow:hidden;height:14px;margin-bottom:12px;gap:2px;">
+      {% if stats.pending %}<div style="flex:{{ stats.pending }};background:#f59e0b;" title="Pending: {{ stats.pending }}"></div>{% endif %}
+      {% if stats.under_review %}<div style="flex:{{ stats.under_review }};background:#3b82f6;" title="Under Review: {{ stats.under_review }}"></div>{% endif %}
+      {% if stats.approved %}<div style="flex:{{ stats.approved }};background:#10b981;" title="Approved: {{ stats.approved }}"></div>{% endif %}
+      {% if stats.disbursed %}<div style="flex:{{ stats.disbursed }};background:#1e3c72;" title="Disbursed: {{ stats.disbursed }}"></div>{% endif %}
+      {% if stats.rejected %}<div style="flex:{{ stats.rejected }};background:#ef4444;" title="Rejected: {{ stats.rejected }}"></div>{% endif %}
+    </div>
+    <div style="display:flex;gap:20px;flex-wrap:wrap;font-size:12px;font-weight:700;">
+      <span style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:2px;background:#f59e0b;display:inline-block;"></span>⏳ Pending ({{ stats.pending }})</span>
+      <span style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:2px;background:#3b82f6;display:inline-block;"></span>🔍 Review ({{ stats.under_review }})</span>
+      <span style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:2px;background:#10b981;display:inline-block;"></span>✅ Approved ({{ stats.approved }})</span>
+      <span style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:2px;background:#1e3c72;display:inline-block;"></span>💰 Disbursed ({{ stats.disbursed }})</span>
+      <span style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:2px;background:#ef4444;display:inline-block;"></span>❌ Rejected ({{ stats.rejected }})</span>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN GRID -->
+<div class="adash-grid">
+  <!-- Recent Applications -->
+  <div class="card">
+    <div class="card-header">
+      <h3>Recent Applications</h3>
+      <a href="{{ url_for('admin.applications') }}" class="card-link">View All →</a>
+    </div>
+    <div class="table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr><th>Reference</th><th>Student</th><th>Institution</th><th>Amount</th><th>Status</th><th>Date</th><th></th></tr>
+        </thead>
+        <tbody>
+          {% for a in recent_apps %}
+          <tr>
+            <td><span class="sn-tag">{{ a.application_number }}</span></td>
+            <td><strong>{{ a.student.full_name }}</strong></td>
+            <td style="font-size:12px;color:#64748b;">{{ (a.institution or '')[:22] }}{% if (a.institution or '')|length > 22 %}…{% endif %}</td>
+            <td style="font-family:'Playfair Display',serif;">KShs {{ "{:,.0f}".format(a.requested_amount) }}</td>
+            <td><span class="badge badge-{{ a.status }}">{{ a.status.replace('_',' ').title() }}</span></td>
+            <td style="font-size:12px;color:#64748b;">{{ a.submitted_at.strftime('%d/%m/%Y') }}</td>
+            <td><a href="{{ url_for('admin.view_application', app_id=a.id) }}" class="btn-xs">View</a></td>
+          </tr>
+          {% else %}
+          <tr><td colspan="7" class="no-data">No applications yet</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Chart + Quick Actions -->
+  <div style="display:flex;flex-direction:column;gap:20px;">
+    <div class="card">
+      <div class="card-header"><h3>Monthly Applications</h3></div>
+      <canvas id="statsChart" height="200"></canvas>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h3>Quick Actions</h3></div>
+      <div style="padding:16px;display:flex;flex-direction:column;gap:10px;">
+        <a href="{{ url_for('admin.applications') }}?status=pending" class="action-btn"><span>⏳</span> Review Pending</a>
+        <a href="{{ url_for('finance.disburse') }}" class="action-btn"><span>💸</span> Disburse Funds</a>
+        <a href="{{ url_for('admin.students') }}" class="action-btn"><span>🎓</span> View Students</a>
+        <a href="{{ url_for('admin.reports') }}" class="action-btn"><span>📈</span> View Reports</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NOTIFICATIONS -->
+{% if notifications %}
+<div class="card mt">
+  <div class="card-header">
+    <h3>🔔 Recent Notifications</h3>
+    <a href="{{ url_for('admin.mark_notifications_read') }}" class="btn-xs">Mark All Read</a>
+  </div>
+  {% for n in notifications %}
+  <div class="notif-item">
+    <div class="notif-title">{{ n.title }}</div>
+    <div class="notif-msg">{{ n.message }}</div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<script>
+fetch('/api/stats').then(r => r.json()).then(d => {
+  new Chart(document.getElementById('statsChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+      datasets: [{
+        label: 'Applications',
+        data: d.monthly_applications,
+        backgroundColor: 'rgba(30,60,114,0.80)',
+        borderRadius: 8,
+        borderSkipped: false
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: 'rgba(0,0,0,0.04)' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+});
+</script>
+{% endblock %}

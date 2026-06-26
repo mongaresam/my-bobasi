@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}My Bursary Grants — Bobasi BBS{% endblock %}
+{% block content %}
+<div class="portal-page">
+  <div class="portal-header">
+    <div class="portal-welcome">
+      <h1>My Bursary Grants</h1>
+      <p>Bursary funds received from Bobasi NG-CDF</p>
+    </div>
+    <a href="{{ url_for('student.dashboard') }}" class="btn btn-outline btn-sm">← Dashboard</a>
+  </div>
+
+  {% if grants %}
+  <!-- Summary card -->
+  <div class="portal-stats" style="grid-template-columns:repeat(3, 1fr);margin-bottom:28px;">
+    <div class="pstat-card green">
+      <div class="pstat-icon">💰</div>
+      <div class="pstat-num" style="font-size:22px;">KShs {{ "{:,.0f}".format(grants | sum(attribute='principal_amount')) }}</div>
+      <div class="pstat-label">Total Received</div>
+    </div>
+    <div class="pstat-card blue">
+      <div class="pstat-icon">🏆</div>
+      <div class="pstat-num">{{ grants|length }}</div>
+      <div class="pstat-label">Total Grants</div>
+    </div>
+    <div class="pstat-card">
+      <div class="pstat-icon">📅</div>
+      <div class="pstat-num" style="font-size:18px;">2025/2026</div>
+      <div class="pstat-label">Financial Year</div>
+    </div>
+  </div>
+
+  <div class="pcard">
+    <div class="pcard-header"><h3>Grant History</h3></div>
+    <table class="portal-table">
+      <thead>
+        <tr><th>Grant Date</th><th>Application Ref</th><th>Amount</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        {% for g in grants %}
+        <tr>
+          <td style="color:#64748b;">{{ g.created_at.strftime('%d %B %Y') }}</td>
+          <td><span class="sn-tag">{{ g.application.application_number }}</span></td>
+          <td style="font-family:'Playfair Display',serif;font-weight:700;color:#1e3c72;font-size:16px;">
+            KShs {{ "{:,.0f}".format(g.principal_amount) }}
+          </td>
+          <td><span class="badge badge-approved">✅ Disbursed</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="pcard">
+    <div class="empty-state" style="padding:80px 40px;">
+      <div style="font-size:64px;margin-bottom:16px;">🎓</div>
+      <h3 style="font-family:'Playfair Display',serif;font-size:22px;color:#1e3c72;margin-bottom:8px;">No Grants Yet</h3>
+      <p style="color:#64748b;margin-bottom:24px;">Once your application is approved and funds are disbursed, they will appear here.</p>
+      <a href="{{ url_for('student.my_applications') }}" class="btn btn-primary">View Applications</a>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends 'admin/base.html' %}
+{% block title %}Reports — Bobasi BBS{% endblock %}
+{% block page_title %}Reports & Analytics{% endblock %}
+{% block content %}
+<div class="reports-grid">
+  <div class="card">
+    <div class="card-header"><h3>📊 Applications by Status</h3></div>
+    {% set total_apps = namespace(val=0) %}{% for row in status_data %}{% set total_apps.val = total_apps.val + row[1] %}{% endfor %}
+    <table class="admin-table">
+      <thead><tr><th>Status</th><th>Count</th><th>%</th></tr></thead>
+      <tbody>
+        {% for row in status_data %}
+        <tr>
+          <td><span class="badge badge-{{ row[0] }}">{{ row[0].replace('_',' ').title() }}</span></td>
+          <td><strong>{{ row[1] }}</strong></td>
+          <td><div class="bar-row"><div class="bar-fill" style="width:{{ ((row[1]/total_apps.val)*100)|round(1) if total_apps.val > 0 else 0 }}%"></div><span>{{ ((row[1]/total_apps.val)*100)|round(1) if total_apps.val > 0 else 0 }}%</span></div></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="card">
+    <div class="card-header"><h3>💰 Total Disbursed</h3></div>
+    <div style="padding:40px;text-align:center;">
+      <div style="font-family:'Playfair Display',serif;font-size:36px;font-weight:900;color:#c9911a;">KShs. {{ "{:,.2f}".format(total_disbursed) }}</div>
+      <div style="color:#6b7280;margin-top:8px;">2025/2026 Financial Year</div>
+    </div>
+  </div>
+</div>
+<div class="card mt">
+  <div class="card-header"><h3>📍 Applications by Sub-County</h3></div>
+  <table class="admin-table">
+    <thead><tr><th>Sub-County</th><th>Applications</th><th>Total Approved (KShs.)</th></tr></thead>
+    <tbody>
+      {% for row in sc_data %}
+      <tr>
+        <td><strong>{{ row[0] or 'Not Specified' }}</strong></td>
+        <td>{{ row[1] }}</td>
+        <td>{{ "{:,.0f}".format(row[2] or 0) }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="3" class="no-data">No data</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<div class="card mt">
+  <div class="card-header"><h3>🏫 Top Institutions</h3></div>
+  <table class="admin-table">
+    <thead><tr><th>Institution</th><th>Applications</th><th>Total Approved (KShs.)</th></tr></thead>
+    <tbody>
+      {% for row in inst_data %}
+      <tr>
+        <td><strong>{{ row[0] or 'Not Specified' }}</strong></td>
+        <td>{{ row[1] }}</td>
+        <td>{{ "{:,.0f}".format(row[2] or 0) }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="3" class="no-data">No data</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

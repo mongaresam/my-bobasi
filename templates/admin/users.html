@@ -1,0 +1,59 @@
+{% extends 'admin/base.html' %}
+{% block title %}Users — Bobasi BBS{% endblock %}
+{% block page_title %}User Management{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <h3>👥 System Users</h3>
+    <button class="btn btn-primary btn-sm" onclick="document.getElementById('addModal').style.display='flex'">+ Add User</button>
+  </div>
+  <table class="admin-table">
+    <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Last Login</th><th>Action</th></tr></thead>
+    <tbody>
+      {% for u in users %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td><strong>{{ u.name }}</strong></td>
+        <td>{{ u.email }}</td>
+        <td><span class="badge badge-{{ 'approved' if u.role == 'admin' else 'pending' if u.role == 'review_committee' else 'under_review' }}">{{ u.role.replace('_',' ').title() }}</span></td>
+        <td><span class="badge badge-{{ 'approved' if u.status == 'active' else 'rejected' }}">{{ u.status.title() }}</span></td>
+        <td>{{ u.last_login.strftime('%d/%m/%Y %H:%M') if u.last_login else '—' }}</td>
+        <td>
+          {% if u.id != current_user.id %}
+          <form method="POST" action="{{ url_for('admin.toggle_user_status', user_id=u.id) }}" style="display:inline;">
+            <button type="submit" class="btn-xs {% if u.status == 'active' %}btn-danger{% endif %}">
+              {{ 'Suspend' if u.status == 'active' else 'Activate' }}
+            </button>
+          </form>
+          {% else %}
+          <span style="color:#9ca3af;font-size:12px;">You</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="modal" id="addModal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>Add New User</h3>
+      <button onclick="document.getElementById('addModal').style.display='none'" class="modal-close">✕</button>
+    </div>
+    <form method="POST" action="{{ url_for('admin.add_user') }}" style="padding:24px;display:flex;flex-direction:column;gap:14px;">
+      <div class="fg"><label>Full Name</label><input type="text" name="name" required placeholder="Full name"></div>
+      <div class="fg"><label>Email</label><input type="email" name="email" required placeholder="email@bobasi.go.ke"></div>
+      <div class="fg"><label>Password</label><input type="password" name="password" required placeholder="Minimum 6 chars"></div>
+      <div class="fg"><label>Role</label>
+        <select name="role">
+          <option value="review_committee">Review Committee</option>
+          <option value="finance_officer">Finance Officer</option>
+          <option value="admin">Administrator</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary">Create User</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

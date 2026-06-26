@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block title %}Login — Bobasi BBS{% endblock %}
+{% block content %}
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="auth-logo">
+        <img src="{{ url_for('static', filename='img/ngcdf-logo.svg') }}" alt="NG-CDF Logo">
+      </div>
+      <h1>Welcome Back</h1>
+      <p>Sign in to your Bobasi Bursary account</p>
+    </div>
+    <form method="POST" action="{{ url_for('auth.login') }}" class="auth-form">
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" name="email" required placeholder="your@email.com" autofocus>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <div class="password-wrap">
+          <input type="password" name="password" id="passwordField" required placeholder="Enter password">
+          <button type="button" onclick="togglePwd('passwordField')" class="pwd-toggle">👁</button>
+        </div>
+      </div>
+      <div class="form-check">
+        <label><input type="checkbox" name="remember"> Remember me for 30 days</label>
+      </div>
+      <button type="submit" class="btn btn-primary full">Sign In →</button>
+    </form>
+    <div class="auth-footer">
+      <p>Don't have an account? <a href="{{ url_for('auth.register') }}">Register here</a></p>
+      <p style="margin-top:16px;color:#94a3b8;font-size:12px;line-height:1.7;">
+        Staff login: admin@bobasi.go.ke | finance@bobasi.go.ke | review@bobasi.go.ke<br>
+        Default password: Admin@1234
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

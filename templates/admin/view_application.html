@@ -1,0 +1,171 @@
+{% extends 'admin/base.html' %}
+{% block title %}{{ application.application_number }} — Bobasi BBS{% endblock %}
+{% block page_title %}Application Detail{% endblock %}
+{% block content %}
+<div class="app-detail">
+  <div class="detail-topbar">
+    <a href="{{ url_for('admin.applications') }}" class="btn btn-outline btn-sm">← Back</a>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span class="sn-tag lg">{{ application.application_number }}</span>
+      <span class="badge badge-{{ application.status }}">{{ application.status.replace('_',' ').title() }}</span>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-left">
+      <div class="card">
+        <div class="card-header"><h3>📋 Application & Student Details</h3></div>
+        <div class="drows p">
+          <div class="dr"><span>Student Name</span><strong>{{ application.student.full_name }}</strong></div>
+          <div class="dr"><span>Admission No.</span><strong>{{ application.student.admission_number or '—' }}</strong></div>
+          <div class="dr"><span>Institution</span><strong>{{ application.institution or '—' }}</strong></div>
+          <div class="dr"><span>Course</span><strong>{{ application.course or '—' }}</strong></div>
+          <div class="dr"><span>Level</span><strong>{{ application.level_of_study or '—' }}</strong></div>
+          <div class="dr"><span>Academic Year</span><strong>{{ application.academic_year }}</strong></div>
+          <div class="dr"><span>Amount Requested</span><strong>KShs. {{ "{:,.2f}".format(application.requested_amount) }}</strong></div>
+          <div class="dr {% if application.approved_amount %}hi{% endif %}">
+            <span>Amount Approved</span>
+            <strong>{% if application.approved_amount %}KShs. {{ "{:,.2f}".format(application.approved_amount) }}{% else %}Not yet{% endif %}</strong>
+          </div>
+          {% if application.purpose %}
+          <div class="dr"><span>Purpose</span><strong>{{ application.purpose }}</strong></div>
+          {% endif %}
+          <div class="dr"><span>Submitted</span><strong>{{ application.submitted_at.strftime('%d %B %Y at %H:%M') }}</strong></div>
+          {% if application.committee_comments %}
+          <div class="dr"><span>Committee Notes</span><strong>{{ application.committee_comments }}</strong></div>
+          {% endif %}
+          {% if application.rejection_reason %}
+          <div class="dr" style="background:#fee2e2;"><span>Rejection Reason</span><strong style="color:#991b1b;">{{ application.rejection_reason }}</strong></div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="card mt">
+        <div class="card-header"><h3>👤 Student Profile Summary</h3><a href="{{ url_for('admin.view_student', student_id=application.student.id) }}" class="btn-xs">Full Profile</a></div>
+        <div class="drows p">
+          <div class="dr"><span>Sub-County</span><strong>{{ application.student.sub_county or '—' }}</strong></div>
+          <div class="dr"><span>Family Status</span><strong>{{ (application.student.family_status or '').replace('_',' ').title() }}</strong></div>
+          <div class="dr"><span>Total Siblings</span><strong>{{ application.student.siblings_count }}</strong></div>
+          <div class="dr"><span>Father Income</span><strong>KShs. {{ "{:,.0f}".format(application.student.father_income or 0) }}/yr</strong></div>
+          <div class="dr"><span>Mother Income</span><strong>KShs. {{ "{:,.0f}".format(application.student.mother_income or 0) }}/yr</strong></div>
+          <div class="dr total"><span>Total Family Income</span><strong>KShs. {{ "{:,.0f}".format(application.student.total_family_income) }}/yr</strong></div>
+          <div class="dr"><span>Mobile</span><strong>{{ application.student.phone or '—' }}</strong></div>
+        </div>
+      </div>
+
+      {% set siblings = application.get_siblings() %}
+      {% if siblings %}
+      <div class="card mt">
+        <div class="card-header"><h3>📚 Siblings in Education</h3></div>
+        <table class="admin-table sm">
+          <thead><tr><th>Name</th><th>Institution</th><th>Year</th><th>Total Fee</th><th>Paid</th><th>Outstanding</th></tr></thead>
+          <tbody>
+            {% for s in siblings %}
+            <tr><td>{{ s.name }}</td><td>{{ s.institution }}</td><td>{{ s.year }}</td><td>{{ s.total_fee }}</td><td>{{ s.fees_paid }}</td><td>{{ s.outstanding }}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% endif %}
+
+      {% if application.documents.count() > 0 %}
+      <div class="card mt">
+        <div class="card-header"><h3>📎 Supporting Documents</h3></div>
+        {% for doc in application.documents %}
+        <div class="doc-item" style="padding:12px 24px;">
+          <span>📄</span>
+          <div>
+            <div>{{ doc.document_name }} <span class="badge badge-{{ doc.status }}">{{ doc.status.title() }}</span></div>
+            <small style="color:#6b7280;">{{ doc.document_type.replace('_',' ').title() }} — {{ doc.uploaded_at.strftime('%d/%m/%Y') }}</small>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% if reviews %}
+      <div class="card mt">
+        <div class="card-header"><h3>📋 Committee Reviews</h3></div>
+        {% for r in reviews %}
+        <div style="padding:16px 24px;border-bottom:1px solid #f3f4f6;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+            <strong>{{ r.reviewer.name }}</strong>
+            <span class="badge badge-{{ 'approved' if r.decision == 'recommend_approval' else 'rejected' if r.decision == 'recommend_rejection' else 'pending' }}">{{ r.decision.replace('_',' ').title() }}</span>
+          </div>
+          {% if r.recommended_amount %}<div style="font-size:13px;color:#6b7280;">Recommended: KShs. {{ "{:,.0f}".format(r.recommended_amount) }}</div>{% endif %}
+          {% if r.comments %}<div style="font-size:14px;margin-top:6px;">{{ r.comments }}</div>{% endif %}
+          <small style="color:#9ca3af;">{{ r.review_date.strftime('%d %b %Y %H:%M') }}</small>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="detail-right">
+      <!-- Decision Panel -->
+      <div class="card decision-card">
+        <div class="card-header"><h3>⚖️ Decision</h3></div>
+        <form method="POST" action="{{ url_for('admin.update_status', app_id=application.id) }}" style="padding:20px;display:flex;flex-direction:column;gap:14px;">
+          <div class="fg">
+            <label>Status</label>
+            <select name="status" required>
+              {% for s in ['pending','under_review','approved','rejected','disbursed','completed'] %}
+              <option value="{{ s }}" {% if application.status == s %}selected{% endif %}>{{ s.replace('_',' ').title() }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="fg">
+            <label>Approved Amount (KShs.)</label>
+            <input type="number" name="approved_amount" value="{{ application.approved_amount or '' }}" min="0" placeholder="0">
+          </div>
+          <div class="fg">
+            <label>Rejection Reason (if rejected)</label>
+            <input type="text" name="rejection_reason" value="{{ application.rejection_reason or '' }}" placeholder="State reason...">
+          </div>
+          <div class="fg">
+            <label>Committee Comments</label>
+            <textarea name="committee_comments" rows="3" placeholder="Notes...">{{ application.committee_comments or '' }}</textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Save Decision</button>
+        </form>
+      </div>
+
+      <!-- Add Review -->
+      <div class="card mt">
+        <div class="card-header"><h3>📝 Add Review</h3></div>
+        <form method="POST" action="{{ url_for('admin.add_review', app_id=application.id) }}" style="padding:20px;display:flex;flex-direction:column;gap:14px;">
+          <div class="fg">
+            <label>Your Decision *</label>
+            <select name="decision" required>
+              <option value="">Select...</option>
+              <option value="recommend_approval">Recommend Approval</option>
+              <option value="recommend_rejection">Recommend Rejection</option>
+              <option value="need_more_info">Need More Information</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label>Recommended Amount (KShs.)</label>
+            <input type="number" name="recommended_amount" min="0" placeholder="Optional">
+          </div>
+          <div class="fg">
+            <label>Comments</label>
+            <textarea name="comments" rows="3" placeholder="Your review notes..."></textarea>
+          </div>
+          <button type="submit" class="btn btn-outline">Submit Review</button>
+        </form>
+      </div>
+
+      {% if application.loan %}
+      <div class="card mt">
+        <div class="card-header"><h3>💰 Loan</h3></div>
+        <div class="drows p">
+          <div class="dr"><span>Principal</span><strong>KShs. {{ "{:,.0f}".format(application.loan.principal_amount) }}</strong></div>
+          <div class="dr"><span>Balance</span><strong>KShs. {{ "{:,.0f}".format(application.loan.balance_remaining or 0) }}</strong></div>
+          <div class="dr"><span>Status</span><span class="badge badge-{{ application.loan.status }}">{{ application.loan.status.title() }}</span></div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

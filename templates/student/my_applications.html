@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}My Applications — Bobasi BBS{% endblock %}
+{% block content %}
+<div class="portal-page">
+  <div class="portal-header">
+    <div class="portal-welcome">
+      <h1>My Applications</h1>
+      <p>All your bursary applications for 2025/2026</p>
+    </div>
+    <a href="{{ url_for('application.apply') }}" class="btn btn-primary">+ New Application</a>
+  </div>
+
+  <div class="pcard">
+    <div class="pcard-header">
+      <h3>Application History</h3>
+      <span style="font-size:13px;color:#64748b;">{{ applications|length }} total</span>
+    </div>
+    {% if applications %}
+    <table class="portal-table">
+      <thead>
+        <tr><th>Reference</th><th>Academic Year</th><th>Amount Requested</th><th>Amount Approved</th><th>Status</th><th>Submitted</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for a in applications %}
+        <tr>
+          <td><strong class="sn-tag">{{ a.application_number }}</strong></td>
+          <td>{{ a.academic_year }}</td>
+          <td>KShs {{ "{:,.0f}".format(a.requested_amount) }}</td>
+          <td>
+            {% if a.approved_amount %}
+            <strong style="color:#10b981;">KShs {{ "{:,.0f}".format(a.approved_amount) }}</strong>
+            {% elif a.status == 'rejected' %}
+            <span style="color:#ef4444;">—</span>
+            {% else %}
+            <span style="color:#94a3b8;">Pending</span>
+            {% endif %}
+          </td>
+          <td><span class="badge badge-{{ a.status }}">{{ a.status.replace('_',' ').title() }}</span></td>
+          <td style="color:#64748b;font-size:13px;">{{ a.submitted_at.strftime('%d %b %Y') }}</td>
+          <td><a href="{{ url_for('application.view', app_id=a.id) }}" class="btn-xs">View</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+      <div style="font-size:48px;margin-bottom:12px;">📝</div>
+      <p>No applications submitted yet.</p>
+      <a href="{{ url_for('application.apply') }}" class="btn btn-primary btn-sm">Apply Now</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

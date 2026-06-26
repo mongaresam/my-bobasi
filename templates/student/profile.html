@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+{% block title %}My Profile — Bobasi BBS{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/form.css') }}">{% endblock %}
+{% block content %}
+<div class="form-page">
+  <div class="form-header">
+    <h1>Complete Your Profile</h1>
+    <p>Provide accurate information — this is used to evaluate your bursary application</p>
+    <div class="prog-steps">
+      <div class="ps active" data-step="1">Personal</div>
+      <div class="ps" data-step="2">Location</div>
+      <div class="ps" data-step="3">Family</div>
+      <div class="ps" data-step="4">Academic</div>
+      <div class="ps" data-step="5">Financial</div>
+      <div class="ps" data-step="6">Bank & Verify</div>
+    </div>
+    <div class="prog-bar-wrap"><div class="prog-bar-fill" id="progFill"></div></div>
+  </div>
+
+  <form method="POST" action="{{ url_for('student.profile') }}" id="profileForm" class="multi-form">
+
+    <div class="form-step active" id="step1">
+      <h2 class="step-title">📋 Personal Information</h2>
+      <div class="fgrid">
+        <div class="fg full"><label>Full Name *</label><input type="text" name="full_name" value="{{ student.full_name or '' }}" required></div>
+        <div class="fg"><label>Date of Birth *</label><input type="date" name="date_of_birth" value="{{ student.date_of_birth or '' }}" required></div>
+        <div class="fg"><label>National ID Number</label><input type="text" name="id_number" value="{{ student.id_number or '' }}" placeholder="e.g. 35123456"></div>
+        <div class="fg"><label>Gender *</label>
+          <select name="gender" required>
+            <option value="">Select Gender</option>
+            <option value="male" {% if student.gender == 'male' %}selected{% endif %}>Male</option>
+            <option value="female" {% if student.gender == 'female' %}selected{% endif %}>Female</option>
+            <option value="other" {% if student.gender == 'other' %}selected{% endif %}>Other</option>
+          </select>
+        </div>
+        <div class="fg"><label>Student Mobile *</label><input type="tel" name="phone" value="{{ student.phone or '' }}" required placeholder="0712345678"></div>
+        <div class="fg"><label>Parent/Guardian Mobile *</label><input type="tel" name="parent_phone" value="{{ student.parent_phone or '' }}" required placeholder="0712345678"></div>
+      </div>
+    </div>
+
+    <div class="form-step" id="step2">
+      <h2 class="step-title">📍 Location Information</h2>
+      <div class="fgrid">
+        <div class="fg"><label>Sub-County *</label>
+          <select name="sub_county" required>
+            <option value="">Select Sub-County</option>
+            {% for sc in ['Bobasi Central','Bobasi Chache','Bobasi North','Bobasi South West','Matibabu','Nyacheki','Boochi/Tendere','Boochi West'] %}
+            <option value="{{ sc }}" {% if student.sub_county == sc %}selected{% endif %}>{{ sc }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="fg"><label>Division</label><input type="text" name="division" value="{{ student.division or '' }}" placeholder="e.g. Bobasi"></div>
+        <div class="fg"><label>Location</label><input type="text" name="location" value="{{ student.location or '' }}" placeholder="e.g. Nyamache"></div>
+        <div class="fg"><label>Sub-Location</label><input type="text" name="sub_location" value="{{ student.sub_location or '' }}" placeholder="e.g. Rioma"></div>
+        <div class="fg"><label>Ward</label><input type="text" name="ward" value="{{ student.ward or '' }}" placeholder="e.g. Bobasi Central"></div>
+        <div class="fg"><label>Polling Station</label><input type="text" name="polling_station" value="{{ student.polling_station or '' }}" placeholder="e.g. Nyamache Primary"></div>
+        <div class="fg"><label>Registered Voter?</label>
+          <select name="registered_voter">
+            <option value="No" {% if student.registered_voter != 'Yes' %}selected{% endif %}>No</option>
+            <option value="Yes" {% if student.registered_voter == 'Yes' %}selected{% endif %}>Yes</option>
+          </select>
+        </div>
+        <div class="fg"><label>Postal Address</label><input type="text" name="postal_address" value="{{ student.postal_address or '' }}" placeholder="P.O BOX XXXX"></div>
+      </div>
+    </div>
+
+    <div class="form-step" id="step3">
+      <h2 class="step-title">👨‍👩‍👧‍👦 Family Information</h2>
+      <div class="fgrid">
+        <div class="fg full"><label>Family Status *</label>
+          <div class="radio-grp">
+            <label class="ro"><input type="radio" name="family_status" value="total_orphan" {% if student.family_status == 'total_orphan' %}checked{% endif %}> Total Orphan (Attach death certificate)</label>
+            <label class="ro"><input type="radio" name="family_status" value="partial_orphan" {% if student.family_status == 'partial_orphan' %}checked{% endif %}> Partial Orphan (Attach death certificate & ID)</label>
+            <label class="ro"><input type="radio" name="family_status" value="both_parents_alive" {% if not student.family_status or student.family_status == 'both_parents_alive' %}checked{% endif %}> Both Parents Alive (Attach parents' ID)</label>
+          </div>
+        </div>
+        <div class="fg"><label>Father's Name</label><input type="text" name="father_name" value="{{ student.father_name or '' }}" placeholder="Father's full name"></div>
+        <div class="fg"><label>Mother's Name</label><input type="text" name="mother_name" value="{{ student.mother_name or '' }}" placeholder="Mother's full name"></div>
+        <div class="fg"><label>Total Siblings</label><input type="number" name="siblings_count" value="{{ student.siblings_count or 0 }}" min="0"></div>
+        <div class="fg"><label>Siblings Working</label><input type="number" name="siblings_working" value="{{ student.siblings_working or 0 }}" min="0"></div>
+        <div class="fg"><label>Siblings in Secondary</label><input type="number" name="siblings_secondary" value="{{ student.siblings_secondary or 0 }}" min="0"></div>
+        <div class="fg"><label>Siblings in Post-Secondary</label><input type="number" name="siblings_post_secondary" value="{{ student.siblings_post_secondary or 0 }}" min="0"></div>
+        <div class="fg full"><label>If Orphan — Who pays your education?</label><input type="text" name="orphan_sponsor" value="{{ student.orphan_sponsor or '' }}" placeholder="Name and relationship"></div>
+        <div class="fg"><label>Another Sponsor?</label>
+          <select name="another_sponsor">
+            <option value="No" {% if student.another_sponsor != 'Yes' %}selected{% endif %}>No</option>
+            <option value="Yes" {% if student.another_sponsor == 'Yes' %}selected{% endif %}>Yes</option>
+          </select>
+        </div>
+        <div class="fg"><label>Sponsor Details</label><input type="text" name="sponsor_details" value="{{ student.sponsor_details or '' }}" placeholder="Name and amount"></div>
+        <div class="fg"><label>Received Bursary Before?</label>
+          <select name="prev_bursary">
+            <option value="No" {% if student.prev_bursary != 'Yes' %}selected{% endif %}>No</option>
+            <option value="Yes" {% if student.prev_bursary == 'Yes' %}selected{% endif %}>Yes</option>
+          </select>
+        </div>
+        <div class="fg"><label>Previous Year(s)</label><input type="text" name="prev_bursary_years" value="{{ student.prev_bursary_years or '' }}" placeholder="e.g. 2022, 2023"></div>
+        <div class="fg"><label>Previous Amount</label><input type="text" name="prev_bursary_amount" value="{{ student.prev_bursary_amount or '' }}" placeholder="e.g. KShs. 5,000"></div>
+      </div>
+    </div>
+
+    <div class="form-step" id="step4">
+      <h2 class="step-title">🎓 Academic Information</h2>
+      <div class="fgrid">
+        <div class="fg"><label>Admission Number *</label><input type="text" name="admission_number" value="{{ student.admission_number or '' }}" required placeholder="ADM/2024/001"></div>
+        <div class="fg"><label>Level of Study *</label>
+          <select name="level_of_study" required>
+            <option value="">Select Level</option>
+            {% for l in ['Certificate','Diploma','Degree','Masters','PHD'] %}
+            <option value="{{ l }}" {% if student.level_of_study == l %}selected{% endif %}>{{ l }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="fg full"><label>Institution Name *</label><input type="text" name="institution" value="{{ student.institution or '' }}" required placeholder="e.g. University of Nairobi"></div>
+        <div class="fg"><label>Campus / Branch</label><input type="text" name="campus" value="{{ student.campus or '' }}" placeholder="e.g. Main Campus"></div>
+        <div class="fg full"><label>Course *</label><input type="text" name="course" value="{{ student.course or '' }}" required placeholder="e.g. Bachelor of Science in Computer Science"></div>
+        <div class="fg"><label>Year of Study</label><input type="number" name="year_of_study" value="{{ student.year_of_study or 1 }}" min="1" max="7"></div>
+      </div>
+    </div>
+
+    <div class="form-step" id="step5">
+      <h2 class="step-title">💵 Family Financial Status</h2>
+      <div class="fgrid">
+        <div class="fg"><label>Father's Gross Income (KShs/year)</label><input type="number" name="father_income" value="{{ student.father_income or 0 }}" min="0"></div>
+        <div class="fg"><label>Mother's Gross Income (KShs/year)</label><input type="number" name="mother_income" value="{{ student.mother_income or 0 }}" min="0"></div>
+        <div class="fg"><label>Self Income (KShs/year)</label><input type="number" name="self_income" value="{{ student.self_income or 0 }}" min="0"></div>
+        <div class="fg"><label>Father's Occupation</label><input type="text" name="father_occupation" value="{{ student.father_occupation or '' }}" placeholder="e.g. Farmer"></div>
+        <div class="fg"><label>Mother's Occupation</label><input type="text" name="mother_occupation" value="{{ student.mother_occupation or '' }}" placeholder="e.g. Small Business"></div>
+      </div>
+    </div>
+
+    <div class="form-step" id="step6">
+      <h2 class="step-title">🏦 Bank Details & Verification</h2>
+      <div class="fgrid">
+        <div class="fg sec-label full"><label>University/College Finance Office</label></div>
+        <div class="fg"><label>Finance Officer Name</label><input type="text" name="finance_person" value="{{ student.finance_person or '' }}" placeholder="Finance Officer"></div>
+        <div class="fg"><label>Finance Officer Contact</label><input type="tel" name="finance_contact" value="{{ student.finance_contact or '' }}" placeholder="0712345678"></div>
+        <div class="fg"><label>Bank Account Number *</label><input type="text" name="bank_ac_no" value="{{ student.bank_ac_no or '' }}" required placeholder="Institution account"></div>
+        <div class="fg"><label>Account Name *</label><input type="text" name="account_name" value="{{ student.account_name or '' }}" required placeholder="Account holder name"></div>
+        <div class="fg"><label>Bank Branch</label><input type="text" name="bank_branch" value="{{ student.bank_branch or '' }}" placeholder="e.g. Equity Bank Nyamache"></div>
+        <div class="fg"><label>School Email</label><input type="email" name="school_email" value="{{ student.school_email or '' }}" placeholder="finance@university.ac.ke"></div>
+        <div class="fg sec-label full"><label>Local Verification</label></div>
+        <div class="fg"><label>Principal/Dean of Students</label><input type="text" name="principal_name" value="{{ student.principal_name or '' }}" placeholder="Name"></div>
+        <div class="fg"><label>Principal Contact</label><input type="tel" name="principal_contact" value="{{ student.principal_contact or '' }}" placeholder="0712345678"></div>
+        <div class="fg"><label>Religious Leader</label><input type="text" name="religious_leader" value="{{ student.religious_leader or '' }}" placeholder="Pastor/Imam name"></div>
+        <div class="fg"><label>Chief/Assistant Chief</label><input type="text" name="chief_name" value="{{ student.chief_name or '' }}" placeholder="Chief's name"></div>
+      </div>
+    </div>
+
+    <div class="form-nav">
+      <button type="button" class="btn btn-outline" id="prevBtn" onclick="prevStep()" style="display:none">← Previous</button>
+      <button type="button" class="btn btn-primary" id="nextBtn" onclick="nextStep()">Next →</button>
+      <button type="submit" class="btn btn-success" id="submitBtn" style="display:none">Save Profile ✓</button>
+    </div>
+  </form>
+</div>
+<script>
+let step = 1, total = 6;
+function showStep(n) {
+  document.querySelectorAll('.form-step').forEach(s => s.classList.remove('active'));
+  document.getElementById('step' + n).classList.add('active');
+  document.querySelectorAll('.ps').forEach((p, i) => { p.classList.toggle('active', i < n); });
+  document.getElementById('prevBtn').style.display = n > 1 ? 'inline-block' : 'none';
+  document.getElementById('nextBtn').style.display = n < total ? 'inline-block' : 'none';
+  document.getElementById('submitBtn').style.display = n === total ? 'inline-block' : 'none';
+  document.getElementById('progFill').style.width = ((n / total) * 100) + '%';
+  window.scrollTo(0, 0);
+}
+function nextStep() { if (step < total) showStep(++step); }
+function prevStep() { if (step > 1) showStep(--step); }
+showStep(1);
+</script>
+{% endblock %}

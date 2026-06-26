@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Finance — Bobasi BBS{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body class="admin-body">
+<div class="admin-layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-logo">
+        <img src="{{ url_for('static', filename='img/ngcdf-logo.svg') }}" alt="NG-CDF Logo">
+      </div>
+      <div class="sidebar-brand-text">
+        <div class="brand-title">Bobasi BBS</div>
+        <div class="brand-sub">Finance Portal</div>
+      </div>
+      <div class="sidebar-toggle-btn" onclick="toggleAdminSidebar()" id="sidebarToggleBtn">◀</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Overview</div>
+      <a href="{{ url_for('finance.dashboard') }}" class="nav-item {% if request.endpoint == 'finance.dashboard' %}active{% endif %}">
+        <span class="nav-icon">📊</span> <span class="nav-text">Dashboard</span>
+      </a>
+      <div class="nav-section-label">Disbursements</div>
+      <a href="{{ url_for('finance.disburse') }}" class="nav-item {% if request.endpoint == 'finance.disburse' %}active{% endif %}">
+        <span class="nav-icon">💸</span> <span class="nav-text">Disburse Funds</span>
+      </a>
+      <a href="{{ url_for('finance.disbursements') }}" class="nav-item {% if request.endpoint == 'finance.disbursements' %}active{% endif %}">
+        <span class="nav-icon">📋</span> <span class="nav-text">Disbursement Records</span>
+      </a>
+      <a href="{{ url_for('finance.grants') }}" class="nav-item {% if request.endpoint == 'finance.grants' %}active{% endif %}">
+        <span class="nav-icon">🏆</span> <span class="nav-text">Grant Records</span>
+      </a>
+      <div class="nav-section-label">Applications</div>
+      <a href="{{ url_for('admin.applications') }}?status=approved" class="nav-item">
+        <span class="nav-icon">⏳</span> <span class="nav-text">Awaiting Disbursement</span>
+      </a>
+      <a href="{{ url_for('admin.applications') }}?status=disbursed" class="nav-item">
+        <span class="nav-icon">✅</span> <span class="nav-text">Disbursed Applications</span>
+      </a>
+      {% if current_user.role == 'admin' %}
+      <div class="nav-section-label">Admin</div>
+      <a href="{{ url_for('admin.dashboard') }}" class="nav-item">
+        <span class="nav-icon">⚙️</span> <span class="nav-text">Admin Panel</span>
+      </a>
+      {% endif %}
+      <a href="{{ url_for('auth.home') }}" class="nav-item">
+        <span class="nav-icon">🌐</span> <span class="nav-text">Public Site</span>
+      </a>
+      <a href="{{ url_for('auth.logout') }}" class="nav-item logout">
+        <span class="nav-icon">🚪</span> <span class="nav-text">Logout</span>
+      </a>
+    </nav>
+    <div class="sidebar-user">
+      <div class="user-avatar-sm">{{ current_user.name[0].upper() }}</div>
+      <div class="sidebar-user-info">
+        <div class="user-name-sm">{{ current_user.name }}</div>
+        <div class="user-role-sm">Finance Officer</div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="admin-main" id="adminMain">
+    <div class="admin-topbar">
+      <button class="sidebar-toggle" onclick="toggleAdminSidebar()">☰</button>
+      <h1 class="page-title">{% block page_title %}Finance{% endblock %}</h1>
+      <div class="topbar-right">
+        <span id="adminDate" class="admin-date"></span>
+      </div>
+    </div>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      <div class="admin-flash">
+        {% for cat, msg in messages %}
+        <div class="flash flash-{{ cat }}">{{ msg }} <button onclick="this.parentElement.remove()">✕</button></div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    {% endwith %}
+    <div class="admin-content">{% block content %}{% endblock %}</div>
+  </main>
+</div>
+<script>
+  const d = new Date();
+  document.getElementById('adminDate').textContent = d.toLocaleDateString('en-KE', {weekday:'short', day:'numeric', month:'short', year:'numeric'});
+  function toggleAdminSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const btn = document.getElementById('sidebarToggleBtn');
+    sidebar.classList.toggle('collapsed');
+    btn.textContent = sidebar.classList.contains('collapsed') ? '▶' : '◀';
+    localStorage.setItem('finSidebarCollapsed', sidebar.classList.contains('collapsed'));
+  }
+  if (localStorage.getItem('finSidebarCollapsed') === 'true') {
+    document.getElementById('sidebar').classList.add('collapsed');
+    document.getElementById('sidebarToggleBtn').textContent = '▶';
+  }
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

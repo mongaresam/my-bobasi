@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% block title %}Application {{ application.application_number }} — Bobasi BBS{% endblock %}
+{% block content %}
+<div class="portal-page">
+  <div class="portal-header">
+    <div>
+      <h1>Application: {{ application.application_number }}</h1>
+      <p>{{ application.academic_year }} — {{ application.institution }}</p>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;">
+      <span class="badge badge-{{ application.status }} lg">{{ application.status.replace('_',' ').title() }}</span>
+      <a href="{{ url_for('application.upload_documents', app_id=application.id) }}" class="btn btn-outline btn-sm">Upload Docs</a>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-left">
+      <div class="pcard">
+        <div class="pcard-header"><h3>📋 Application Details</h3></div>
+        <div class="drows">
+          <div class="dr"><span>Application No.</span><strong>{{ application.application_number }}</strong></div>
+          <div class="dr"><span>Student</span><strong>{{ application.student.full_name }}</strong></div>
+          <div class="dr"><span>Institution</span><strong>{{ application.institution or '—' }}</strong></div>
+          <div class="dr"><span>Course</span><strong>{{ application.course or '—' }}</strong></div>
+          <div class="dr"><span>Level</span><strong>{{ application.level_of_study or '—' }}</strong></div>
+          <div class="dr"><span>Academic Year</span><strong>{{ application.academic_year }}</strong></div>
+          <div class="dr"><span>Amount Requested</span><strong>KShs. {{ "{:,.2f}".format(application.requested_amount) }}</strong></div>
+          <div class="dr {% if application.approved_amount %}highlight{% endif %}">
+            <span>Amount Approved</span>
+            <strong>{% if application.approved_amount %}KShs. {{ "{:,.2f}".format(application.approved_amount) }}{% else %}Pending{% endif %}</strong>
+          </div>
+          {% if application.purpose %}
+          <div class="dr"><span>Purpose</span><strong>{{ application.purpose }}</strong></div>
+          {% endif %}
+          <div class="dr"><span>Submitted</span><strong>{{ application.submitted_at.strftime('%d %B %Y at %H:%M') }}</strong></div>
+          {% if application.reviewed_at %}
+          <div class="dr"><span>Reviewed</span><strong>{{ application.reviewed_at.strftime('%d %B %Y') }} by {{ application.reviewed_by }}</strong></div>
+          {% endif %}
+          {% if application.committee_comments %}
+          <div class="dr"><span>Comments</span><strong>{{ application.committee_comments }}</strong></div>
+          {% endif %}
+          {% if application.rejection_reason %}
+          <div class="dr" style="background:#fee2e2;"><span>Rejection Reason</span><strong style="color:#991b1b;">{{ application.rejection_reason }}</strong></div>
+          {% endif %}
+        </div>
+      </div>
+
+      {% set siblings = application.get_siblings() %}
+      {% if siblings %}
+      <div class="pcard mt">
+        <div class="pcard-header"><h3>📚 Siblings in Education</h3></div>
+        <table class="portal-table sm">
+          <thead><tr><th>Name</th><th>Institution</th><th>Year</th><th>Total Fee</th><th>Paid</th><th>Outstanding</th></tr></thead>
+          <tbody>
+            {% for s in siblings %}
+            <tr><td>{{ s.name }}</td><td>{{ s.institution }}</td><td>{{ s.year }}</td><td>{{ s.total_fee }}</td><td>{{ s.fees_paid }}</td><td>{{ s.outstanding }}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% endif %}
+
+      {% if application.documents.count() > 0 %}
+      <div class="pcard mt">
+        <div class="pcard-header"><h3>📎 Documents</h3><a href="{{ url_for('application.upload_documents', app_id=application.id) }}" class="btn-xs">+ Upload</a></div>
+        {% for doc in application.documents %}
+        <div class="doc-item">
+          <span class="doc-icon">📄</span>
+          <div><div class="doc-name">{{ doc.document_name }}</div><div class="doc-meta">{{ doc.document_type.replace('_',' ').title() }} — <span class="badge badge-{{ doc.status }}">{{ doc.status.title() }}</span></div></div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="detail-right">
+      <div class="pcard">
+        <div class="pcard-header"><h3>📊 Progress</h3></div>
+        <div class="status-tracker">
+          {% set steps = [('pending','Submitted'),('under_review','Under Review'),('approved','Approved'),('disbursed','Disbursed'),('completed','Completed')] %}
+          {% set current_idx = namespace(val=0) %}
+          {% for s, label in steps %}{% if application.status == s %}{% set current_idx.val = loop.index0 %}{% endif %}{% endfor %}
+          {% for s, label in steps %}
+          <div class="st-step {% if loop.index0 <= current_idx.val %}done{% endif %} {% if application.status == s %}current{% endif %} {% if application.status == 'rejected' and s == 'approved' %}rejected{% endif %}">
+            <div class="st-dot">{{ '✓' if loop.index0 < current_idx.val else loop.index }}</div>
+            <span>{{ label }}</span>
+          </div>
+          {% if not loop.last %}<div class="st-line {% if loop.index0 < current_idx.val %}active{% endif %}"></div>{% endif %}
+          {% endfor %}
+          {% if application.status == 'rejected' %}
+          <div class="rejected-msg">❌ Application Not Approved<br><small>{{ application.rejection_reason or '' }}</small></div>
+          {% endif %}
+        </div>
+      </div>
+
+      {% if application.loan %}
+      <div class="pcard mt">
+        <div class="pcard-header"><h3>💰 Loan Status</h3></div>
+        <div class="drows">
+          <div class="dr"><span>Principal</span><strong>KShs. {{ "{:,.2f}".format(application.loan.principal_amount) }}</strong></div>
+          <div class="dr"><span>Balance</span><strong>KShs. {{ "{:,.2f}".format(application.loan.balance_remaining or 0) }}</strong></div>
+          <div class="dr"><span>Status</span><span class="badge badge-{{ application.loan.status }}">{{ application.loan.status.title() }}</span></div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

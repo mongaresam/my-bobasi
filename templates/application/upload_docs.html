@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}Upload Documents — Bobasi BBS{% endblock %}
+{% block content %}
+<div class="portal-page">
+  <div class="portal-header">
+    <h1>Upload Documents</h1>
+    <p>Application: {{ application.application_number }}</p>
+  </div>
+  <div class="detail-grid">
+    <div class="detail-left">
+      <div class="pcard">
+        <div class="pcard-header"><h3>Upload Supporting Document</h3></div>
+        <form method="POST" enctype="multipart/form-data" style="padding:24px;">
+          <div class="fg" style="margin-bottom:16px;">
+            <label>Document Type *</label>
+            <select name="document_type" required>
+              <option value="">Select document type</option>
+              <option value="national_id">National ID</option>
+              <option value="admission_letter">Admission Letter</option>
+              <option value="transcript">Transcript / Result Slip</option>
+              <option value="death_certificate">Death Certificate</option>
+              <option value="parent_id">Parent ID</option>
+              <option value="fee_structure">Fee Structure</option>
+              <option value="birth_certificate">Birth Certificate</option>
+              <option value="bank_statement">Bank Statement</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="fg" style="margin-bottom:16px;">
+            <label>File * (PDF, JPG, PNG, DOC — max 10MB)</label>
+            <input type="file" name="document" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx" required>
+          </div>
+          <div style="display:flex;gap:12px;">
+            <button type="submit" class="btn btn-primary">Upload Document</button>
+            <a href="{{ url_for('application.view', app_id=application.id) }}" class="btn btn-outline">Back</a>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div class="detail-right">
+      <div class="pcard">
+        <div class="pcard-header"><h3>Uploaded Documents ({{ documents|length }})</h3></div>
+        {% if documents %}
+          {% for doc in documents %}
+          <div class="doc-item">
+            <span class="doc-icon">📄</span>
+            <div>
+              <div class="doc-name">{{ doc.document_name }}</div>
+              <div class="doc-meta">{{ doc.document_type.replace('_',' ').title() }}</div>
+              <span class="badge badge-{{ doc.status }}">{{ doc.status.title() }}</span>
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="empty-state"><p>No documents uploaded yet.</p></div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
