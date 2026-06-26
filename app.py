@@ -1,13 +1,14 @@
 """
 Bobasi NG-CDF Bursary Borrowing System
 Bobasi Constituency, Kisii County, Kenya
-Run: python app.py
+Run locally: python app.py
 """
 
 import os
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template
 from flask_login import LoginManager
 from flask_migrate import Migrate
+
 from config import config
 from models.models import db, User
 
@@ -24,15 +25,18 @@ def load_user(user_id):
 
 
 def create_app(config_name=None):
-    if not config_name:
-        config_name = os.environ.get("FLASK_ENV", "development")
+    if config_name is None:
+        config_name = os.environ.get("FLASK_ENV", "production")
 
     app = Flask(__name__)
     app.config.from_object(config.get(config_name, config["default"]))
 
-    os.makedirs(app.config.get("UPLOAD_FOLDER", "static/uploads"), exist_ok=True)
-    os.makedirs("database", exist_ok=True)
+    # Create folders only when running locally
+    if not os.environ.get("RENDER"):
+        os.makedirs(app.config.get("UPLOAD_FOLDER", "static/uploads"), exist_ok=True)
+        os.makedirs("database", exist_ok=True)
 
+    # Initialize extensions
     db.init_app(app)
     login_manager.init_app(app)
     migrate.init_app(app, db)
@@ -58,42 +62,62 @@ def create_app(config_name=None):
 
     # Error handlers
     @app.errorhandler(404)
-    def not_found(e):
+    def not_found(error):
         return render_template("errors/404.html"), 404
 
     @app.errorhandler(403)
-    def forbidden(e):
+    def forbidden(error):
         return render_template("errors/403.html"), 403
 
     @app.errorhandler(500)
-    def internal_error(e):
+    def internal_error(error):
         db.session.rollback()
         return render_template("errors/500.html"), 500
 
     @app.shell_context_processor
     def make_shell_context():
-        return {"db": db, "User": User}
+        return {
+            "db": db,
+            "User": User,
+        }
 
     return app
 
 
+# ===========================================================
+# Flask application for Gunicorn / Render
+# ===========================================================
+
+env = os.environ.get("FLASK_ENV", "production")
+app = create_app(env)
+
+
+# ===========================================================
+# Local Development
+# ===========================================================
+
 if __name__ == "__main__":
-    env = os.environ.get("FLASK_ENV", "development")
-    app = create_app(env)
 
     with app.app_context():
         db.create_all()
-        # Seed default admin users
+
         from models.models import seed_defaults
+
         seed_defaults()
+
         print("✅ Database initialized")
 
-    print("=" * 55)
-    print("  BOBASI NG-CDF BURSARY BORROWING SYSTEM")
-    print("  Bobasi Constituency, Kisii County, Kenya")
-    print("=" * 55)
-    print("  URL:   http://127.0.0.1:5000")
-    print("  Admin: admin@bobasi.go.ke / Admin@1234")
-    print("=" * 55)
+    print("=" * 60)
+    print("Bobasi NG-CDF Bursary Borrowing System")
+    print("Bobasi Constituency, Kisii County")
+    print("=" * 60)
+    print("Running on http://127.0.0.1:5000")
+    print("Admin: admin@bobasi.go.ke")
+    print("Password: Admin@1234")
+    print("=" * 60)
 
-    app.run(host="0.0.0.0", port=5000, debug=(env == "development"))
+    app.run(
+        host="0.0.0.0",
+        port=5000,
+        debug=(env == "development"),
+    )
